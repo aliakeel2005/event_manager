@@ -34,22 +34,34 @@ def save_thank_you_letter(id,form_letter)
 end
 
 
-template_letter = File.read('form_letter.erb')
-erb_template = ERB.new(template_letter)
-
 contents = CSV.open('event_attendees.csv',
 headers: true,
 header_converters: :symbol)
 
+template_letter = File.read('form_letter.erb')
+erb_template = ERB.new(template_letter)
+
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
-
+   phone_number = row[5]
+   arr_number = phone_number.to_s.chars
+   puts "Original phone number: #{phone_number}, Array: #{arr_number}"
+   if arr_number.length < 10
+     arr_number = "phone number unavailable"
+   elsif arr_number.length == 11 && arr_number[0] == '1'
+    arr_number.shift
+    puts arr_number
+   elsif arr_number.length == 11 && arr_number[0] != '1'
+     arr_number = "phone number unavailable"
+   elsif arr_number.length > 11
+     arr_number = "phone number unavailable"
+   end
   zipcode = clean_zipcode(row[:zipcode])
 
   legislators = legislator_by_zipcode(zipcode)
 
   form_letter = erb_template.result(binding)
   save_thank_you_letter(id,form_letter)
-  puts "#{name} #{zipcode} #{legislators}"
+  puts "#{arr_number}"
 end
