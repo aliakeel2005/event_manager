@@ -56,16 +56,22 @@ contents.each do |row|
     unwanted_characters.include?(element)
    end
    puts "Original phone number: #{phone_number}, Array: #{arr_number}"
-   if arr_number.length < 10
-     arr_number = "phone number unavailable"
-   elsif arr_number.length == 11 && arr_number[0] == '1'
-    arr_number.shift
-    p arr_number
-   elsif arr_number.length == 11 && arr_number[0] != '1'
-     arr_number = "phone number unavailable"
-   elsif arr_number.length > 11
-     arr_number = "phone number unavailable"
-   end
+   case arr_number.length
+
+   when 0..9
+    arr_number = "phone number unavailable"
+   when 11
+    if arr_number[0] == '1'
+      arr_number.shift
+      p arr_number
+    else
+      arr_number = "phone number unavailable"
+    end
+  when 10
+
+  else
+    arr_number = "phone number unavailable"
+  end
   zipcode = clean_zipcode(row[:zipcode])
 
   legislators = legislator_by_zipcode(zipcode)
