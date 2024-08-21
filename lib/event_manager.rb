@@ -33,6 +33,11 @@ def save_thank_you_letter(id,form_letter)
 
 end
 
+def phone_number(number)
+
+end
+
+
 
 contents = CSV.open('event_attendees.csv',
 headers: true,
@@ -46,12 +51,16 @@ contents.each do |row|
   name = row[:first_name]
    phone_number = row[5]
    arr_number = phone_number.to_s.chars
+   unwanted_characters = ["-", "(", ")", " ", "."]
+   arr_number.reject! do |element|
+    unwanted_characters.include?(element)
+   end
    puts "Original phone number: #{phone_number}, Array: #{arr_number}"
    if arr_number.length < 10
      arr_number = "phone number unavailable"
    elsif arr_number.length == 11 && arr_number[0] == '1'
     arr_number.shift
-    puts arr_number
+    p arr_number
    elsif arr_number.length == 11 && arr_number[0] != '1'
      arr_number = "phone number unavailable"
    elsif arr_number.length > 11
