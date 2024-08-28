@@ -1,6 +1,7 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
+require 'time'
 template_letter = File.read('form_letter.html')
 puts 'event manager initalized!'
 
@@ -71,6 +72,15 @@ contents.each do |row|
   id = row[0]
   name = row[:first_name]
   phone_number = row[:homephone]
+  reg_date = row[:regdate]
+
+  # to find average, convert all reg_date(s) to seconds
+  # find the sum of all reg_date(s)
+  # divide by how many reg_date(s) there is
+  p Time.strptime(reg_date, "%m/%d/%y")
+
+  #current issue: cant switch date format to (month,day,year)
+
 
   zipcode = clean_zipcode(row[:zipcode])
 
@@ -81,5 +91,5 @@ contents.each do |row|
   save_thank_you_letter(id,form_letter)
 
   clean_number = clean_phone_number(phone_number)
-  puts "#{name} #{clean_number}"
+  puts "#{name} #{clean_number} #{reg_date}"
 end
