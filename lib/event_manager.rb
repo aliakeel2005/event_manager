@@ -17,70 +17,66 @@ def legislator_by_zipcode(zip)
     legislators = civic_info.representative_info_by_address(
       address: zip,
       levels: 'country',
-      roles: ['legislatorUpperBody', 'legislatorLowerBody']
+      roles: %w[legislatorUpperBody legislatorLowerBody]
     ).officials
-    rescue
-      'you can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
-    end
+  rescue StandardError
+    'you can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
+  end
 end
 
-def save_thank_you_letter(id,form_letter)
+def save_thank_you_letter(id, form_letter)
   Dir.mkdir('output') unless Dir.exist?('output')
 
   filename = "output/thanks_#{id}.html"
   File.open(filename, 'w') do |file|
     file.puts form_letter
   end
-
 end
 
 def clean_phone_number(number)
   arr_number = number.to_s.chars
-  unwanted_characters = ["-", "(", ")", " ", "."]
+  unwanted_characters = ['-', '(', ')', ' ', '.']
   arr_number.reject! do |element|
     unwanted_characters.include?(element)
   end
-   case arr_number.length
+  case arr_number.length
 
-   when 0..9
-    arr_number = "phone number unavailable"
-   when 11
+  when 0..9
+    arr_number = 'phone number unavailable'
+  when 11
     if arr_number[0] == '1'
       arr_number.shift
     else
-      arr_number = "phone number unavailable"
+      arr_number = 'phone number unavailable'
     end
   when 10
 
   else
-    arr_number = "phone number unavailable"
+    arr_number = 'phone number unavailable'
   end
   arr_number = arr_number.join if arr_number.is_a?(Array)
-  return arr_number
+  arr_number
 end
 
-
-
 contents = CSV.open('event_attendees.csv',
-headers: true,
-header_converters: :symbol)
+                    headers: true,
+                    header_converters: :symbol)
 
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new(template_letter)
-
+sum_of_dates = 0
+sum_of_time = 0
 contents.each do |row|
   id = row[0]
   name = row[:first_name]
   phone_number = row[:homephone]
   reg_date = row[:regdate]
+  sum_of_dates += 1
 
   # to find average, convert all reg_date(s) to seconds
   # find the sum of all reg_date(s)
   # divide by how many reg_date(s) there is
-  p Time.strptime(reg_date, "%m/%d/%y")
-
-  #current issue: cant switch date format to (month,day,year)
-
+  sum_of_time += Time.strptime(reg_date, '%m/%d/%y').to_i
 
   zipcode = clean_zipcode(row[:zipcode])
 
@@ -88,8 +84,11 @@ contents.each do |row|
 
   form_letter = erb_template.result(binding)
 
-  save_thank_you_letter(id,form_letter)
+  save_thank_you_letter(id, form_letter)
 
   clean_number = clean_phone_number(phone_number)
   puts "#{name} #{clean_number} #{reg_date}"
 end
+# to find average registration date
+seconds = sum_of_time / sum_of_dates
+p Time.at(seconds).strftime('%m/%d/%y')
