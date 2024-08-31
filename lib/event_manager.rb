@@ -2,6 +2,7 @@ require 'csv'
 require 'google/apis/civicinfo_v2'
 require 'erb'
 require 'time'
+require 'date'
 template_letter = File.read('form_letter.html')
 puts 'event manager initalized!'
 
@@ -58,6 +59,13 @@ def clean_phone_number(number)
   arr_number
 end
 
+def find_average_day(days, sum_of_dates)
+  integers_array = days.map(&:to_i)
+  unrounded_day = integers_array.sum.to_f / sum_of_dates
+  puts 'average registration day of the week:'
+  Date::DAYNAMES[unrounded_day.round]
+end
+
 contents = CSV.open('event_attendees.csv',
                     headers: true,
                     header_converters: :symbol)
@@ -75,9 +83,7 @@ contents.each do |row|
   sum_of_dates += 1
 
   corrected_time = Time.strptime(reg_date, '%m/%d/%y')
-  # to find average day of the week registared
   sum_of_time += corrected_time.to_i
-  p corrected_time.strftime('%u')
   days.push(corrected_time.strftime('%u'))
 
   zipcode = clean_zipcode(row[:zipcode])
@@ -91,11 +97,7 @@ contents.each do |row|
   clean_number = clean_phone_number(phone_number)
   puts "#{name} #{clean_number} #{reg_date}"
 end
-# to find average registration day
-# store each day in an array
-# divide by sum of dates
 seconds = sum_of_time / sum_of_dates
+puts 'average registration date:'
 p Time.at(seconds).strftime('%m/%d/%y')
-integers_array = days.map(&:to_i)
-p unrounded_day = integers_array.sum.to_f / sum_of_dates
-p unrounded_day.round
+p find_average_day(days, sum_of_dates)
